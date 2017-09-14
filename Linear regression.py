@@ -78,10 +78,9 @@ class TwoDLin(object):
         self.r_sqr = 0
         for line in open(self.file_loc):
             self.x1, self.x2, self.y = line.split(',')
-            self.X.append([float(self.x1), float(self.x2), 1])  # add the bias term
+            self.X.append([float(self.x1), float(self.x2), 1]) 
             self.Y.append(float(self.y))
-
-        # let's turn X and Y into numpy arrays since that will be useful later
+            
         self.X = np.array(self.X)
         self.Y = np.array(self.Y)
 
