@@ -66,9 +66,10 @@ def open_pb(str1):
 
 
 class TwoDLin(object):
-    def __init__(self, str1):
+    def __init__(self, str1, poly):
         self.file_loc = str1
         self.x1 = 0
+        self.did_regres = False
         self.x2 = 0
         self.y = 0
         self.X = []
@@ -76,34 +77,55 @@ class TwoDLin(object):
         self.w = 0
         self.yhat = np.array([0])
         self.r_sqr = 0
-        for line in open(self.file_loc):
-            self.x1, self.x2, self.y = line.split(',')
-            self.X.append([float(self.x1), float(self.x2), 1]) 
-            self.Y.append(float(self.y))
-            
-        self.X = np.array(self.X)
-        self.Y = np.array(self.Y)
+        self.kind = poly
+        if poly == 'poly':
+            for line in open(self.file_loc):
+                self.x1, self.y = line.split(',')
+                self.x1 = float(self.x1)
+                self.X.append([self.x1*self.x1, self.x1, 1])  # add the bias term
+                self.Y.append(float(self.y))
+
+            # let's turn X and Y into numpy arrays since that will be useful later
+            self.X = np.array(self.X)
+            self.Y = np.array(self.Y)
+        elif poly == 'lin':
+            for line in open(self.file_loc):
+                self.x1, self.x2, self.y = line.split(',')
+                self.X.append([float(self.x1), float(self.x2), 1])  # add the bias term
+                self.Y.append(float(self.y))
+
+            # let's turn X and Y into numpy arrays since that will be useful later
+            self.X = np.array(self.X)
+            self.Y = np.array(self.Y)
 
     def regression(self):
         self.w = np.linalg.solve(self.X.T.dot(self.X), self.X.T.dot(self.Y))
         self.yhat = np.dot(self.X, self.w)
+        self.did_regres = True
 
     def r_squared(self):
+        if self.did_regres == False :
+            self.regression()
         d1 = self.Y - self.yhat
         d2 = self.Y - self.yhat.mean()
         self.r_sqr = 1 - d1.dot(d1) / d2.dot(d2)
         return self.r_sqr
 
+    def plot(self):
+        if self.kind == 'poly':
+            plt.scatter(self.X[:, 1], self.Y)
+            plt.plot(sorted(self.X[:, 1]), sorted(self.yhat))
+            plt.show()
+            print('a:', self.w[0], 'b:', self.w[1], 'c:', self.w[2])
+            print("r-squared is:", self.r_squared())
+        elif self.kind == 'lin':
+            fig = plt.figure()
+            ax = fig.add_subplot(111, projection='3d')
+            ax.scatter(self.X[:, 0], self.X[:, 1], self.Y)
+            plt.show()
 
-# z = TwoDLin('data_2d.csv')
-# fig = plt.figure()
-# ax = fig.add_subplot(111, projection='3d')
-# ax.scatter(z.X[:, 0], z.X[:, 1], z.Y)
-# plt.show()
 
-z = TwoDLin('data_2d.csv')
-z.regression()
-print("r-squared:", z.r_squared())
+
 
 
 
